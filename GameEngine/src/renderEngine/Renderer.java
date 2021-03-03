@@ -17,5 +17,6 @@ public class Renderer {
 		GL11.glDrawElements(GL11.GL_TRIANGLES, model.getVertexCount(), GL11.GL_UNSIGNED_INT,0);
 		GL20.glDisableVertexAttribArray(0);
 		GL30.glBindVertexArray(0);
+		
 	}
 }
