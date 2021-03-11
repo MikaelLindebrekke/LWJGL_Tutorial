@@ -1,11 +1,16 @@
 package EngineTester;
 
 import org.lwjgl.opengl.Display;
+import org.lwjgl.util.vector.Vector3f;
 
+import entity.Camera;
+import entity.Entity;
+import entity.Light;
 import models.RawModel;
 import models.TexturedModel;
 import renderEngine.DisplayManager;
 import renderEngine.Loader;
+import renderEngine.OBJLoader;
 import renderEngine.Renderer;
 import shaders.StaticShader;
 import textures.ModelTexture;
@@ -16,40 +21,40 @@ public class MainGameLoop {
 		
 		DisplayManager.createDisplay();
 		Loader loader = new Loader();
-		Renderer renderer = new Renderer();
 		StaticShader shader = new StaticShader();
+		Renderer renderer = new Renderer(shader);
+	
+		RawModel model = OBJLoader.loadObjModel("dragon", loader);
 		
-		//The data below makes a square of two triangles with corners V0, V1, V2, V3
+		ModelTexture texture = new ModelTexture(loader.loadTexture("white"));
 		
-		  float[] vertices = {
-				    -0.5f, 0.5f, 0,  //V0
-				    -0.5f, -0.5f, 0, //V1
-				    0.5f, -0.5f, 0,  //V2
-				    0.5f, 0.5f, 0,  //V3
-				  };
-		  
-		  int [] indices = {
-				  0,1,3, //Top triangle V0, V1, V3
-				  3,1,2  //Bottom triangle V3, V1, V2
-				  };
-		  
-		  float[] textureCoords = {
-				  0,0,  //V0
-				  0,1,  //V1
-				  1,1,  //V2
-				  1,0   //V3
-				  };
-		  
-		RawModel model = loader.loadToVAO(vertices, textureCoords, indices);
-		ModelTexture texture = new ModelTexture(loader.loadTexture("op"));
-		TexturedModel texturedModel = new TexturedModel(model, texture);
-		  
+		TexturedModel staticModel = new TexturedModel(model, texture);
+		
+		Vector3f entityPosition = new Vector3f(0,-5,-30);
+		Entity entity = new Entity(staticModel, entityPosition,0,0,0,1);
+		
+		Vector3f lightColour = new Vector3f(1,1,1);
+		Vector3f lightDirection = new Vector3f(20,20,0);
+		Light light = new Light(lightDirection, lightColour);
+		
+		Camera camera = new Camera();
+	
 		while (!Display.isCloseRequested()) {
+			entity.increaseRotation(0, 0, 0);
+//			entity.increasePosition(0, 0, -0.01f);
+			
+			camera.move();
+			
 			renderer.prepare();
+			
 			shader.start();
+			shader.loadLight(light);
+			shader.loadviewMatrix(camera);
+			
 			//Game logic
 			//Render
-			renderer.render(texturedModel);
+			renderer.render(entity, shader);
+			
 			shader.stop();
 			DisplayManager.updateDisplay();
 			

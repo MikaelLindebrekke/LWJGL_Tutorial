@@ -22,7 +22,7 @@ public class DisplayManager {
 		try {
 			Display.setDisplayMode(new DisplayMode(WIDTH, HEIGTH));
 			Display.create(new PixelFormat(), attribs);
-			Display.setTitle("My very own game");
+			Display.setTitle("Practice makes perfest!");
 		} catch (LWJGLException e) {
 			e.printStackTrace();
 		}
