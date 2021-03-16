@@ -1,31 +1,39 @@
 package entity;
 
 import org.lwjgl.input.Keyboard;
+import org.lwjgl.input.Mouse;
 import org.lwjgl.util.vector.Vector3f;
 
 public class Camera {
 
-	private Vector3f position = new Vector3f (0,0,0);
+	private Vector3f position = new Vector3f (0,10,0);
 	private float pitch;  	// How high or low the camera is aimed
 	private float yaw;		// How much left or right the camera is aimed
 	private float roll;		// How much the camera is tilted to one side. 180 degrees is upside down. 
+	
+	private float speed = .1f;
 	
 	public Camera() {}
 	
 	public void move() {
 		if (Keyboard.isKeyDown(Keyboard.KEY_W)) {
-			position.y+=0.08f;
+			position.z-=speed;
 		}
 		if (Keyboard.isKeyDown(Keyboard.KEY_S)) {
-			position.y-=0.08f;
+			position.z+=speed;
 		}
 		if (Keyboard.isKeyDown(Keyboard.KEY_D)) {
-			position.x+=0.08f;
+			position.x+=speed;
 		}
 		if (Keyboard.isKeyDown(Keyboard.KEY_A)) {
-			position.x-=0.08f;
+			position.x-=speed;
 		}
-		
+		if (Keyboard.isKeyDown(Keyboard.KEY_Q)) {
+			position.y+=speed;
+		}
+		if (Keyboard.isKeyDown(Keyboard.KEY_E)) {
+			position.y-=speed;
+		}
 	}
 
 	public Vector3f getPosition() {
