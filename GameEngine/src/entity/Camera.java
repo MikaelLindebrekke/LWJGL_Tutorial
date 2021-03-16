@@ -11,7 +11,7 @@ public class Camera {
 	private float yaw;		// How much left or right the camera is aimed
 	private float roll;		// How much the camera is tilted to one side. 180 degrees is upside down. 
 	
-	private float speed = .1f;
+	private float speed = .3f;
 	
 	public Camera() {}
 	
@@ -28,11 +28,17 @@ public class Camera {
 		if (Keyboard.isKeyDown(Keyboard.KEY_A)) {
 			position.x-=speed;
 		}
-		if (Keyboard.isKeyDown(Keyboard.KEY_Q)) {
+		if (Keyboard.isKeyDown(Keyboard.KEY_Z)) {
 			position.y+=speed;
 		}
-		if (Keyboard.isKeyDown(Keyboard.KEY_E)) {
+		if (Keyboard.isKeyDown(Keyboard.KEY_X)) {
 			position.y-=speed;
+		}
+		if (Keyboard.isKeyDown(Keyboard.KEY_Q)) {
+			yaw-=speed;
+		}
+		if (Keyboard.isKeyDown(Keyboard.KEY_E)) {
+			yaw+=speed;
 		}
 	}
 
