@@ -5,12 +5,15 @@ import java.util.List;
 import java.util.Random;
 
 import org.lwjgl.opengl.Display;
+import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
 
 import entity.Camera;
 import entity.Entity;
 import entity.Light;
 import entity.Player;
+import guis.GuiRenderer;
+import guis.GuiTexture;
 import models.RawModel;
 import models.TexturedModel;
 import objConverter.ModelData;
@@ -29,6 +32,9 @@ public class MainGameLoop {
 		
 		DisplayManager.createDisplay();
 		Loader loader = new Loader();
+		MasterRenderer renderer = new MasterRenderer();
+		
+		// *********** EXAMPLE FOR LOADING IN A TEXTURED MODEL *************
 		
 		//Loads in a model from a OBJ file.
 		ModelData data = OBJFileLoader.loadOBJ("tree");
@@ -42,7 +48,13 @@ public class MainGameLoop {
 		//Adds the texture to a given model
 		TexturedModel tree = new TexturedModel(treeModel, treeTexture);
 		
-		//Condensed version of the above lines of code
+		// *********** EXAMPLE FOR LOADING IN A TEXTURED MODEL *************
+		
+		
+		
+		
+		// *********** ENTITIES *************
+		
 		data = OBJFileLoader.loadOBJ("grassModel");
 		TexturedModel grass = new TexturedModel(loader.loadToVAO(data.getVertices(), data.getTextureCoords(), data.getNormals(), data.getIndices()),
 							new ModelTexture(loader.loadTexture("grassTexture")));
@@ -59,110 +71,155 @@ public class MainGameLoop {
 		TexturedModel bobble = new TexturedModel(loader.loadToVAO(data.getVertices(), data.getTextureCoords(), data.getNormals(), data.getIndices()),
 							new ModelTexture(loader.loadTexture("lowPolyTree")));
 		
-		//Settings for texture in regards to lighting and transparency
-				grass.getTexture().setHasTransparency(true);
-				grass.getTexture().setUseFakeLighting(true);
-				flower.getTexture().setHasTransparency(true);
-				flower.getTexture().setUseFakeLighting(true);
-				fern.getTexture().setHasTransparency(true);
-				
+		// *********** ENTITIES *************
 		
+		// *********** LIGHTING AND TRANSPARENCY *************
+		
+		grass.getTexture().setHasTransparency(true);
+		grass.getTexture().setUseFakeLighting(true);
+		flower.getTexture().setHasTransparency(true);
+		flower.getTexture().setUseFakeLighting(true);
+		fern.getTexture().setHasTransparency(true);
+		
+		// *********** LIGHTING AND TRANSPARENCY *************
+		
+		// *********** SHINE AND DAMP ON MODEL *************
+		
+//		texture.setShineDamper(100);
+//		texture.setReflectivity(0.5f);
+		
+		// *********** SHINE AND DAMP ON MODEL *************
 		
 		// *********** TERRAINS *************
+		
 		TerrainTexture backgroundTexture = new TerrainTexture(loader.loadTexture("grassy"));
 		TerrainTexture rTexture = new TerrainTexture(loader.loadTexture("dirt"));
 		TerrainTexture gTexture = new TerrainTexture(loader.loadTexture("pinkFlowers"));
-		TerrainTexture bTexture = new TerrainTexture(loader.loadTexture("path"));
+		TerrainTexture bTexture = new TerrainTexture(loader.loadTexture("mossPath256"));
 		
 		TerrainTexturePack texturePack = new TerrainTexturePack(backgroundTexture, rTexture, gTexture, bTexture);
 		TerrainTexture blendMap = new TerrainTexture(loader.loadTexture("blendMap"));
 		
+		Terrain terrain = new Terrain(0, -1,loader,texturePack, blendMap, "heightmap");
+		
 		// *********** TERRAINS *************
 		
 		
-		
-		// *********** PLAYER *************
-		data = OBJFileLoader.loadOBJ("stanfordBunny");
-		TexturedModel stanfordBunny = new TexturedModel(loader.loadToVAO(data.getVertices(), data.getTextureCoords(), data.getNormals(), data.getIndices()),
-							new ModelTexture(loader.loadTexture("white")));
-		
-		Player player = new Player(stanfordBunny, new Vector3f(100, 0, -50),0,0,0,.5f);
-		
 		// *********** PLAYER *************
 		
-	// Example section	
-//		ModelTexture texture = staticModel.getTexture();
-//		texture.setShineDamper(100);
-//		texture.setReflectivity(0.5f);
-//		
-//		Vector3f entityPosition = new Vector3f(0,0,-250);
-//		Entity entity = new Entity(staticModel, entityPosition,0,0,0,1);
-//		
+		data = OBJFileLoader.loadOBJ("person");
+		TexturedModel playerModel = new TexturedModel(loader.loadToVAO(data.getVertices(), data.getTextureCoords(), data.getNormals(), data.getIndices()),
+							new ModelTexture(loader.loadTexture("playerTexture")));
+		
+		Player player = new Player(playerModel, new Vector3f(100, 5, -150),0,0,0,.5f);
+		
+		// *********** PLAYER *************
+		
+		// *********** LIGHT *************
+		
 		Vector3f lightColour = new Vector3f(1,1,1);
 		Vector3f lightSource = new Vector3f(20000,40000,20000);
 		Light light = new Light(lightSource, lightColour);
 		
+		// *********** LIGHT *************
+		
+		// *********** CAMERA *************
+		
+		Camera camera = new Camera(player);
+		
+		// *********** CAMERA *************
+		
+		// *********** ENTITY PLACEMENT *************
 		
 		List<Entity> entities = new ArrayList<Entity>();
 		Random random = new Random(676452);
 		for (int i = 0; i<400; i++) {
 			
 			if ( i % 7 == 0) {
-				entities.add(new Entity(flower, 
-						new Vector3f(random.nextFloat()*400-200, 0, random.nextFloat() * -400),0,0,0,1.8f));
-				entities.add(new Entity(grass, 
-						new Vector3f(random.nextFloat()*400-200, 0, random.nextFloat() * -400),0,0,0,2.3f));
+				
+				float x = random.nextFloat() * 800 - 400;
+				float z = random.nextFloat() * -600;
+				float y = terrain.getHeightofTerrain(x, z);
+				
+				entities.add(new Entity(flower, new Vector3f(x, y, z),0,random.nextFloat() * 360,0,1.8f));
+				x = random.nextFloat() * 800 - 400;
+				z = random.nextFloat() * -600;
+				y = terrain.getHeightofTerrain(x, z);
+				entities.add(new Entity(grass, new Vector3f(x, y, z),0,0,0,2.3f));
 			}
 			if (i % 3 == 0) {
-				entities.add(new Entity(tree, 
-						new Vector3f(random.nextFloat()*800-400, 0, random.nextFloat() * -600),0,0,0,random.nextFloat() * 1 + 4));
-				entities.add(new Entity(fern, 
-						new Vector3f(random.nextFloat()*400-200, 0, random.nextFloat() * -400),0,0,0,0.9f));
-				entities.add(new Entity(bobble, 
-						new Vector3f(random.nextFloat()*800-400, 0, random.nextFloat() * -600),0,0,0,random.nextFloat() * 0.1f + 0.6f));
+				float x = random.nextFloat() * 800 - 400;
+				float z = random.nextFloat() * -600;
+				float y = terrain.getHeightofTerrain(x, z);
+				
+				entities.add(new Entity(tree, new Vector3f(x, y, z),0,0,0,random.nextFloat() * 1 + 4));
+				
+				x = random.nextFloat() * 800 - 400;
+				z = random.nextFloat() * -600;
+				y = terrain.getHeightofTerrain(x, z);
+				entities.add(new Entity(fern, new Vector3f(x, y, z),0,0,0,0.9f));
+				x = random.nextFloat() * 800 - 400;
+				z = random.nextFloat() * -600;
+				y = terrain.getHeightofTerrain(x, z);
+				entities.add(new Entity(bobble, new Vector3f(x, y, z),0,0,0,random.nextFloat() * 0.1f + 0.6f));
 			}
 		
 		}
+		
+		// *********** ENTITY PLACEMENT *************
+		
+		
+		// *********** TERRAIN PLACEMENT *************
+		
 //		List<Terrain> terrains = new ArrayList<Terrain>();
-//		for (int j = -8; j <= 3; j++) {
-//			for (int i = -12; i <= 0; i++) {
-//				terrains.add(new Terrain(j, i,loader,texturePack, blendMap));
+//		for (int j = -2; j <= 0; j++) {
+//			for (int i = -2; i <= 0; i++) {
+//				terrains.add(new Terrain(j, i,loader,texturePack, blendMap, "heightmap"));
 //			}
 //		}
 		
-		Terrain terrain = new Terrain(0, -1,loader,texturePack, blendMap); 
-		Terrain terrain2 = new Terrain(-1, -1,loader,texturePack, blendMap); 
-		Camera camera = new Camera();
+		// *********** TERRAIN PLACEMENT *************
 		
-		MasterRenderer renderer = new MasterRenderer();
+		// *********** GUIS *************
+		List<GuiTexture> guis = new ArrayList<GuiTexture>();
+		GuiTexture gui = new GuiTexture(loader.loadTexture("socuwan"), new Vector2f(0.5f, 0.5f), new Vector2f(0.25f, 0.25f));
+		guis.add(gui);
+		
+		GuiRenderer guiRenderer = new GuiRenderer(loader);
+		// *********** GUIS *************
+		
+		// *********** MAIN GAME LOOP *************
 		
 		while (!Display.isCloseRequested()) {
-			//entity.increaseRotation(0, 0.5f, 0);
-//			entity.increasePosition(0, 0, -0.01f);
-			camera.setPitch(20);
-			camera.move();
-			//Every entity that needs to be rendered has to be put in to this kind of line. 
-			// renderer.processEntity(entity);
-//			for (Terrain terrain : terrains) {
-//				renderer.processTerrain(terrain);
-//			}
-			player.move();
-			renderer.processEntity(player);
 			
-			renderer.processTerrain(terrain);
-			renderer.processTerrain(terrain2);
-			for (Entity entity : entities) {
-				renderer.processEntity(entity);
-			}
+			
+			camera.move();
+			
+			
+			
+			player.move(terrain);
 			
 			//Game logic
 			
 			
 			//Render
+			renderer.processEntity(player);
+			renderer.processTerrain(terrain);
+//			for(Terrain terrain : terrains) {
+//				
+//				renderer.processTerrain(terrain);
+//			}
+			
+			for (Entity entity : entities) {
+				renderer.processEntity(entity);
+			}
+			
 			renderer.render(light, camera);
+			guiRenderer.render(guis);
 			DisplayManager.updateDisplay();
 			
 		}
+		guiRenderer.cleanUp();
 		renderer.cleanUp();
 		loader.cleanUp();
 		DisplayManager.closeDisplay();
