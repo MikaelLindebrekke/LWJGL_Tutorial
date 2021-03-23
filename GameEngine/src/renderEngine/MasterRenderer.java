@@ -15,6 +15,7 @@ import entity.Light;
 import models.TexturedModel;
 import shaders.StaticShader;
 import shaders.TerrainShader;
+import skybox.SkyboxRenderer;
 import terrains.Terrain;
 
 public class MasterRenderer {
@@ -38,11 +39,14 @@ public class MasterRenderer {
 	private Map<TexturedModel, List<Entity>> entities = new HashMap<TexturedModel, List<Entity>>();
 	private List<Terrain> terrains = new ArrayList<Terrain>();
 	
-	public MasterRenderer() {
+	private SkyboxRenderer skyboxRenderer;
+	
+	public MasterRenderer(Loader loader) {
 		enableCulling();
 		createProjectionMatrix();
 		renderer = new EntityRenderer(shader, projectionMatrix);
 		terrainRenderer = new TerrainRenderer(terrainShader, projectionMatrix);
+		skyboxRenderer = new SkyboxRenderer(loader, projectionMatrix);
 	}
 	public static void enableCulling() {
 		GL11.glEnable(GL11.GL_CULL_FACE);
@@ -52,20 +56,21 @@ public class MasterRenderer {
 	public static void disableCulling() {
 		GL11.glDisable(GL11.GL_CULL_FACE);
 	}
-	public void render(Light sun, Camera camera) {
+	public void render(List<Light> lights, Camera camera) {
 		prepare();
 		shader.start();
 		shader.loadSkyColour(RED, GREEN, BLUE);
-		shader.loadLight(sun);
+		shader.loadLights(lights);
 		shader.loadviewMatrix(camera);
 		renderer.render(entities);
 		shader.stop();
 		terrainShader.start();
 		terrainShader.loadSkyColour(RED, GREEN, BLUE);
-		terrainShader.loadLight(sun);
+		terrainShader.loadLights(lights);
 		terrainShader.loadviewMatrix(camera);
 		terrainRenderer.render(terrains);
 		terrainShader.stop();
+		skyboxRenderer.render(camera, RED, GREEN, BLUE);
 		terrains.clear();
 		entities.clear();
 	}
@@ -110,7 +115,12 @@ public class MasterRenderer {
 		projectionMatrix.m32 = -((2 * NEAR_PLANE * FAR_PLANE) / frustum_length);
 		projectionMatrix.m33 = 0;
 	}
-
+	
+	public Matrix4f getProjectionMatrix() {
+		return projectionMatrix;
+	}
+	
+	 
 
 
 

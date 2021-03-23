@@ -25,6 +25,7 @@ import terrains.Terrain;
 import textures.ModelTexture;
 import textures.TerrainTexture;
 import textures.TerrainTexturePack;
+import toolbox.MousePicker;
 
 public class MainGameLoop {
 
@@ -32,7 +33,7 @@ public class MainGameLoop {
 		
 		DisplayManager.createDisplay();
 		Loader loader = new Loader();
-		MasterRenderer renderer = new MasterRenderer();
+		MasterRenderer renderer = new MasterRenderer(loader);
 		
 		// *********** EXAMPLE FOR LOADING IN A TEXTURED MODEL *************
 		
@@ -71,15 +72,20 @@ public class MainGameLoop {
 		TexturedModel bobble = new TexturedModel(loader.loadToVAO(data.getVertices(), data.getTextureCoords(), data.getNormals(), data.getIndices()),
 							new ModelTexture(loader.loadTexture("lowPolyTree")));
 		
+		data = OBJFileLoader.loadOBJ("lamp");
+		TexturedModel lamp = new TexturedModel(loader.loadToVAO(data.getVertices(), data.getTextureCoords(), data.getNormals(), data.getIndices()),
+							new ModelTexture(loader.loadTexture("lamp")));
+		
 		// *********** ENTITIES *************
 		
-		// *********** LIGHTING AND TRANSPARENCY *************
+		// *********** FAKE LIGHTING AND TRANSPARENCY *************
 		
 		grass.getTexture().setHasTransparency(true);
 		grass.getTexture().setUseFakeLighting(true);
 		flower.getTexture().setHasTransparency(true);
 		flower.getTexture().setUseFakeLighting(true);
 		fern.getTexture().setHasTransparency(true);
+		lamp.getTexture().setUseFakeLighting(true);
 		
 		// *********** LIGHTING AND TRANSPARENCY *************
 		
@@ -117,10 +123,18 @@ public class MainGameLoop {
 		
 		// *********** LIGHT *************
 		
-		Vector3f lightColour = new Vector3f(1,1,1);
-		Vector3f lightSource = new Vector3f(20000,40000,20000);
+		List<Light> lights = new ArrayList<Light>();
+		//The sun
+		Vector3f lightColour = new Vector3f(0.6f,0.6f,0.6f);
+		Vector3f lightSource = new Vector3f(0,1000,-7000);
 		Light light = new Light(lightSource, lightColour);
+		lights.add(light);
 		
+		
+		lights.add(new Light(new Vector3f(185,10,-293), new Vector3f(2,0,0), new Vector3f(1, 0.01f, 0.002f)));
+		lights.add(new Light(new Vector3f(370,17,-300), new Vector3f(0,2,2), new Vector3f(1, 0.01f, 0.002f)));
+		lights.add(new Light(new Vector3f(293,7,-305), new Vector3f(2,2,0), new Vector3f(1, 0.01f, 0.002f)));
+
 		// *********** LIGHT *************
 		
 		// *********** CAMERA *************
@@ -166,6 +180,10 @@ public class MainGameLoop {
 		
 		}
 		
+		entities.add(new Entity(lamp, new Vector3f(185, -4.7f,-293), 0, 0, 0, 1));
+		entities.add(new Entity(lamp, new Vector3f(370, 4.2f,-300), 0, 0, 0, 1));
+		entities.add(new Entity(lamp, new Vector3f(293, -6.8f,-305), 0, 0, 0, 1));
+		
 		// *********** ENTITY PLACEMENT *************
 		
 		
@@ -183,10 +201,13 @@ public class MainGameLoop {
 		// *********** GUIS *************
 		List<GuiTexture> guis = new ArrayList<GuiTexture>();
 		GuiTexture gui = new GuiTexture(loader.loadTexture("socuwan"), new Vector2f(0.5f, 0.5f), new Vector2f(0.25f, 0.25f));
-		guis.add(gui);
+		//guis.add(gui);
 		
 		GuiRenderer guiRenderer = new GuiRenderer(loader);
 		// *********** GUIS *************
+		
+		
+		MousePicker picker = new MousePicker(camera, renderer.getProjectionMatrix());
 		
 		// *********** MAIN GAME LOOP *************
 		
@@ -214,7 +235,7 @@ public class MainGameLoop {
 				renderer.processEntity(entity);
 			}
 			
-			renderer.render(light, camera);
+			renderer.render(lights, camera);
 			guiRenderer.render(guis);
 			DisplayManager.updateDisplay();
 			
